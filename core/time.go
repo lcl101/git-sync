@@ -1,0 +1,36 @@
+package core
+
+import (
+	"time"
+)
+
+// Time 定义time
+type Time time.Time
+
+// type Time struct {
+// 	time.Time
+// }
+
+const (
+	timeFormart = "2006-01-02 15:04:05"
+)
+
+//UnmarshalJSON json time格式
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	now, err := time.ParseInLocation(`"`+timeFormart+`"`, string(data), time.Local)
+	*t = Time(now)
+	return
+}
+
+//MarshalJSON json time格式
+func (t Time) MarshalJSON() ([]byte, error) {
+	b := make([]byte, 0, len(timeFormart)+2)
+	b = append(b, '"')
+	b = time.Time(t).AppendFormat(b, timeFormart)
+	b = append(b, '"')
+	return b, nil
+}
+
+func (t Time) String() string {
+	return time.Time(t).Format(timeFormart)
+}
