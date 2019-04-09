@@ -78,7 +78,6 @@ func (app *App) syncByCommitTime() {
 		if c.Committer.When.Unix() >= time.Time(app.config.CommitDate).Unix() {
 			app.dealCommit(c)
 		}
-
 		return nil
 	})
 }
@@ -88,6 +87,9 @@ func (app *App) dealCommit(commit *object.Commit) {
 		fs, err := commit.Stats()
 		CheckIfError(err)
 		// fmt.Println(fs)
+		if len(fs) > 0 {
+			Info("%s===>%s", commit.Author.Name, commit.Message)
+		}
 		for _, f := range fs {
 			if _, ok := files[f.Name]; !ok {
 				files[f.Name] = true
@@ -103,10 +105,14 @@ func (app *App) copy() {
 	for k, v := range files {
 		if v {
 			src := app.config.SrcPath + "/" + k
+			if !CheckFile(src) {
+				Error(src)
+				continue
+			}
 			dst := app.config.DstPath + "/" + k
 			size, err := CopyFile(dst, src)
 			CheckIfError(err)
-			Info("file=%s, size=%d", k, size)
+			Debug("file=%s, size=%d", k, size)
 		}
 	}
 }

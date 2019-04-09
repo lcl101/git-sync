@@ -12,7 +12,5 @@ func main() {
 	}
 	app.LoadConfig()
 	core.Warning("app= %v", app)
-
 	app.Sync()
-
 }

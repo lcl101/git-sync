@@ -35,8 +35,7 @@ func CheckIfError(err error) {
 	if err == nil {
 		return
 	}
-
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
+	Error("error: %s", err)
 	os.Exit(1)
 }
 
@@ -45,7 +44,7 @@ func Info(format string, args ...interface{}) {
 	fmt.Printf("\x1b[34;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 }
 
-// Debug should be used to debug
+// Debug should be used to display a debug
 func Debug(format string, args ...interface{}) {
 	fmt.Printf("%s\n", fmt.Sprintf(format, args...))
 }
@@ -53,6 +52,11 @@ func Debug(format string, args ...interface{}) {
 // Warning should be used to display a warning
 func Warning(format string, args ...interface{}) {
 	fmt.Printf("\x1b[36;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
+}
+
+// Error should be used to display a error
+func Error(format string, args ...interface{}) {
+	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 }
 
 //CopyFile 文件拷贝
@@ -71,6 +75,15 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
 	}
 	defer dst.Close()
 	return io.Copy(dst, src)
+}
+
+// CheckFile 检查文件是否存在
+func CheckFile(file string) bool {
+	_, err := os.Stat(file)
+	if err == nil {
+		return true
+	}
+	return false
 }
 
 // MakeDir 创建路径
