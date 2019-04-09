@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	git "gopkg.in/src-d/go-git.v4"
@@ -30,6 +31,10 @@ type Config struct {
 type App struct {
 	ConfigPath string
 	config     Config
+}
+
+func (app *App) String() string {
+	return "srcPath: " + app.config.SrcPath + "\ndstPath: " + app.config.DstPath
 }
 
 //LoadConfig 加载配置文件
@@ -63,7 +68,6 @@ func (app *App) syncByLogs() {
 		CheckIfError(err)
 		app.dealCommit(commit)
 	}
-
 }
 
 func (app *App) syncByCommitTime() {
@@ -83,19 +87,28 @@ func (app *App) syncByCommitTime() {
 }
 
 func (app *App) dealCommit(commit *object.Commit) {
-	if commit.Author.Name == app.config.Author {
-		fs, err := commit.Stats()
-		CheckIfError(err)
-		// fmt.Println(fs)
-		if len(fs) > 0 {
-			Info("%s===>%s", commit.Author.Name, commit.Message)
-		}
-		for _, f := range fs {
-			if _, ok := files[f.Name]; !ok {
-				files[f.Name] = true
-			}
+	if commit.Author.Name != app.config.Author {
+		return
+	}
+	//根据提交消息剔除merge内容
+	msg := commit.Message
+	if strings.HasPrefix(msg, "Merge branch") {
+		Warning("merge commit: %s", msg)
+		return
+	}
+
+	fs, err := commit.Stats()
+	CheckIfError(err)
+	// fmt.Println(fs)
+	if len(fs) > 0 {
+		Info("%s===>%s", commit.Author.Name, commit.Message)
+	}
+	for _, f := range fs {
+		if _, ok := files[f.Name]; !ok {
+			files[f.Name] = true
 		}
 	}
+
 }
 
 func (app *App) copy() {
@@ -112,7 +125,7 @@ func (app *App) copy() {
 			dst := app.config.DstPath + "/" + k
 			size, err := CopyFile(dst, src)
 			CheckIfError(err)
-			Debug("file=%s, size=%d", k, size)
+			Debug("copy file=%s, size=%d", k, size)
 		}
 	}
 }

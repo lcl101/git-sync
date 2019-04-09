@@ -11,6 +11,6 @@ func main() {
 		ConfigPath: conf,
 	}
 	app.LoadConfig()
-	core.Warning("app= %v", app)
+	core.Info("%s", app.String())
 	app.Sync()
 }
