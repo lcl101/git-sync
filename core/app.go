@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -123,6 +124,8 @@ func (app *App) copy() {
 				continue
 			}
 			dst := app.config.DstPath + "/" + k
+			//删除原文件
+			os.Remove(dst)
 			size, err := CopyFile(dst, src)
 			CheckIfError(err)
 			Debug("copy file=%s, size=%d", k, size)
